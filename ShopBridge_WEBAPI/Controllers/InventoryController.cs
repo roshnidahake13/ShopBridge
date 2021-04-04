@@ -65,7 +65,7 @@ namespace ShopBridge_WEBAPI.Controllers
 
                      inventory_item = await ((from inv in _context.Inventories
                                            where inv.item_Id == InventoryId
-                                           select inv).SingleOrDefaultAsync());
+                                           select inv).SingleOrDefaultAsync()); // Getting product based on InventoryId from Database
 
                     //inventory_item = await _context.Inventories.FindAsync(InventoryId);
 
@@ -95,7 +95,7 @@ namespace ShopBridge_WEBAPI.Controllers
             {
 
                 _context.Inventories.Add(obj_Inventory);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // Inserting product to database
 
             }
             catch (Exception ex)
@@ -114,7 +114,7 @@ namespace ShopBridge_WEBAPI.Controllers
 
             obj_Inventory.item_Id = id;
 
-            _context.Entry(obj_Inventory).State = EntityState.Modified;
+            _context.Entry(obj_Inventory).State = EntityState.Modified; // Updating product in databsae based on id
 
             try
             {
@@ -146,7 +146,7 @@ namespace ShopBridge_WEBAPI.Controllers
             try
             {
 
-                var inventory_item = await _context.Inventories.FindAsync(itemId);
+                var inventory_item = await _context.Inventories.FindAsync(itemId); // Finding and Deleting product from database
                 if (inventory_item == null)
                 {
                     return NotFound();
