@@ -47,6 +47,7 @@ namespace ShopBridge_WEBAPI.Controllers
             catch (Exception ex)
             {
                 type_master = ex.Message;
+                return BadRequest();
             }
             return Ok(type_master);
         }
