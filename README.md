@@ -94,9 +94,11 @@ For React JS-
 
 * Backend Functionality - 4 hours
 * Frontend Functionality - 6 hours
-* Frontend Presentation - 1 hour
-* Backend-Frontend Integration - 4 hours
-* Unit Test Coverage - 5 hours
+* Frontend Presentation - 2 hours
+* Frontend Validations - 1 hour
+* Backend-Frontend Integration - 2 hours
+* Unit Test Coverage - 3 hours
+
 
 ## ✔ Validations
 
