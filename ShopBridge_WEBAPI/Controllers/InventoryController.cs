@@ -78,6 +78,7 @@ namespace ShopBridge_WEBAPI.Controllers
                 {
                     
                     string exception_msg = ex.Message;
+                    return BadRequest();
                 }
             }
 
@@ -101,6 +102,7 @@ namespace ShopBridge_WEBAPI.Controllers
             catch (Exception ex)
             {
                 string Exception = ex.Message;
+                return BadRequest();
             }
 
             //return Content(HttpStatusCode.Created, obj_Inventory);
@@ -161,6 +163,7 @@ namespace ShopBridge_WEBAPI.Controllers
             catch (Exception ex)
             {
                 string Exception = ex.Message;
+                return BadRequest();
             }
 
 
