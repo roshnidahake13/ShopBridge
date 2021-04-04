@@ -85,6 +85,7 @@ namespace ShopBridge_WEBAPI.Controllers
 
           
             return Ok(inventory_item);
+            //return inventory_item; For unit testing purpose
         }
 
 
