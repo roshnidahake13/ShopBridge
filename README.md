@@ -74,7 +74,7 @@ For React JS-
 * Items can also be updated from the specified **Update** action button.
 * Items can also be deleted from the specified **Delete** action button.
 
-![Recordit GIF](http://g.recordit.co/333MvxfJqQ.gif)
+(https://github.com/roshnidahake13/ShopBridge/blob/main/ImagesAndVideos/screencast-localhost-3000-202104.mp4)
 
 ---
 ## 🧪 Run Tests
