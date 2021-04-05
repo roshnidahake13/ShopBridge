@@ -340,16 +340,5 @@ namespace ShopBridge.Test
 
         #endregion
 
-       
-
-        private class PostRepository
-        {
-            private ShopBridgeDBContext context;
-
-            public PostRepository(ShopBridgeDBContext context)
-            {
-                this.context = context;
-            }
-        }
     }
 }
