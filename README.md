@@ -16,7 +16,6 @@ This project is built in **React JS and ASP.NET Core(.NET Core Framework 3.1)**
 
 - [System Requirements](#-system-requirements)
 - [Setup](#-setup)
-- [Run Project](#-run-project)
 - [Usage](#-usage)
 - [Run Tests](#-run-tests)
 - [Build](#-build)
@@ -81,6 +80,7 @@ For React JS-
 
 * Go to _**Test > Test Explorer**_.
 * Click on **Run All Test** icon.
+[![Shop Bridge Image](https://github.com/roshnidahake13/ShopBridge/blob/main/ImagesAndVideos/UnitTest.PNG)]()
 ---
 ## 🌐 Build
 
