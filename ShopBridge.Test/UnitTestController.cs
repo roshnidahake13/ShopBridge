@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ShopBridge_WEBAPI.Controllers;
 using ShopBridge_WEBAPI.Models;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Web.Http;
 //using System.Web.Http;
@@ -15,7 +16,8 @@ namespace ShopBridge.Test
 {
     public class UnitTestController
     {
-        //private PostRepository repository;
+        
+       
         ShopBridgeDBContext context = new ShopBridgeDBContext(dbContextOptions);
         public static DbContextOptions<ShopBridgeDBContext> dbContextOptions { get; }
         public static string connectionString = @"Data Source=LAPTOP-O5G13I0U\SQLEXPRESS;Initial Catalog=ShopBridge;Integrated Security=True;MultipleActiveResultSets=true;";
@@ -36,8 +38,10 @@ namespace ShopBridge.Test
 
         }
 
+        #region Get By Id  
+
         [Fact]
-        public async void Task_GetById_Return()
+        public async void Task_GetPostById_Return_OkResult()
         {
             //Arrange  
             var controller = new InventoryController(context);
@@ -47,74 +51,265 @@ namespace ShopBridge.Test
             var data = await controller.getInventoryItem(postId);
 
             //Assert  
-            var result = Assert.IsType<ActionResult<Inventory>>(data);
-            Assert.Null(result.Result);
-            Assert.Equal("Samsung A31", result.Value.item_Name);
-            //Assert.IsType<OkObjectResult>(data);
+            Assert.IsType<OkObjectResult>(data);
         }
 
         [Fact]
-        public async void Task_Post_Return()
+        public async void Task_GetPostById_Return_NotFoundResult()
         {
-            try
-            {
-                //Arrange  
+            //Arrange  
+            var controller = new InventoryController(context);
+            var postId = 7;
 
-                var controller = new InventoryController(context);
-                Inventory objInventory = new Inventory();
-                byte[] image = new byte[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            //Act  
+            var data = await controller.getInventoryItem(postId);
 
-                objInventory.item_Name = "OnePlus 8t";
-                objInventory.item_Desc = "Mobile Phone";
-                objInventory.itemAvailability = Convert.ToBoolean(1);
-                objInventory.item_AddedOn = DateTime.Now;
-                objInventory.item_Quantity = 5;
-                objInventory.item_Image = image;
-
-
-                // Act
-
-                IActionResult actionResult = await controller.PostInventoryItem(objInventory);
-
-                // Assert
-
-                Microsoft.AspNetCore.Mvc.StatusCodeResult statusCode = Assert.IsType<Microsoft.AspNetCore.Mvc.StatusCodeResult>(actionResult);
-                Assert.Equal(200, statusCode.StatusCode);
-
-
-
-
-            }
-            catch (Exception ex)
-            {
-                string exception = ex.Message;
-            }
-
+            //Assert  
+            Assert.IsType<Microsoft.AspNetCore.Mvc.NotFoundResult>(data);
         }
 
         [Fact]
-        public async void Task_PutById_Return()
+        public async void Task_GetPostById_Return_BadRequestResult()
+        {
+            //Arrange  
+            var controller = new InventoryController(context);
+            int? postId = null;
+
+            //Act  
+            var data = await controller.getInventoryItem(postId);
+
+            //Assert  
+            Assert.IsType<Microsoft.AspNetCore.Mvc.BadRequestResult>(data);
+        }
+
+        [Fact]
+        public async void Task_GetPostById_MatchResult()
+        {
+            //Arrange  
+            var controller = new InventoryController(context);
+            int? postId = 2;
+
+            //Act  
+            var data = await controller.getInventoryItem(postId);
+
+            //Assert  
+            Assert.IsType<OkObjectResult>(data);
+
+            var okResult = data.Should().BeOfType<OkObjectResult>().Subject;
+            var post = okResult.Value.Should().BeAssignableTo<Inventory>().Subject;
+
+           
+            Assert.Equal("Samsung A31", post.item_Name);
+            Assert.Equal("Mobile Phone", post.item_Desc);
+        }
+
+        #endregion
+
+        #region Get All  
+
+        [Fact]
+        public async void Task_GetPosts_Return_OkResult()
+        {
+            //Arrange  
+            var controller = new InventoryController(context);
+
+            //Act  
+            var data = await controller.getInventoryItemList();
+
+            //Assert  
+            Assert.IsType<OkObjectResult>(data);
+        }
+
+        [Fact]
+        public void Task_GetPosts_Return_BadRequestResult()
+        {
+            //Arrange  
+            var controller = new InventoryController(context);
+
+            //Act  
+            var data = controller.getInventoryItemList();
+            data = null;
+
+            if (data != null)
+                //Assert  
+                Assert.IsType<Microsoft.AspNetCore.Mvc.BadRequestResult>(data);
+        }
+
+        [Fact]
+        public async void Task_GetPosts_MatchResult()
+        {
+            //Arrange  
+            var controller = new InventoryController(context);
+
+            //Act  
+            var data = await controller.getInventoryItemList();
+
+            //Assert  
+            Assert.IsType<OkObjectResult>(data);
+
+            var okResult = data.Should().BeOfType<OkObjectResult>().Subject;
+            var post = okResult.Value.Should().BeAssignableTo<List<Inventory>>().Subject;
+
+
+           
+            Assert.Equal("Samsung A20", post[0].item_Name);
+            Assert.Equal("Mobile Phone", post[0].item_Desc);
+
+            Assert.Equal("Samsung A31", post[1].item_Name);
+            Assert.Equal("Mobile Phone", post[1].item_Desc);
+        }
+
+        #endregion
+
+        #region Add New Blog  
+
+        [Fact]
+        public async void Task_Add_ValidData_Return_OkResult()
+        {
+            //Arrange  
+            var controller = new InventoryController(context);
+            
+            Inventory objInventory = new Inventory();
+            byte[] image = new byte[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+            objInventory.item_Name = "OnePlus 8t";
+            objInventory.item_Desc = "Mobile Phone";
+            objInventory.itemAvailability = Convert.ToBoolean(1);
+            objInventory.item_AddedOn = DateTime.Now;
+            objInventory.item_Quantity = 5;
+            objInventory.item_Image = image;
+            //Act  
+            var data = await controller.PostInventoryItem(objInventory);
+
+            //Assert  
+            Assert.IsType<OkObjectResult>(data);
+        }
+
+        [Fact]
+        public async void Task_Add_InvalidData_Return_BadRequest()
+        {
+            //Arrange  
+            var controller = new InventoryController(context);
+            
+            Inventory objInventory = new Inventory();
+            byte[] image = new byte[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+            objInventory.item_Name = "OnePlus 8t";
+            objInventory.item_Desc = "Mobile Phone";
+            objInventory.itemAvailability = Convert.ToBoolean(1);
+            objInventory.item_AddedOn = DateTime.Now;
+            objInventory.item_Quantity = 5;
+            objInventory.item_Image = image;
+            //Act   
+            controller.ModelState.AddModelError("item_Name", "Item Name is Required");
+            var data = await controller.PostInventoryItem(objInventory);
+
+            //Assert  
+            Assert.IsType<Microsoft.AspNetCore.Mvc.BadRequestResult>(data);
+        }
+
+        [Fact]
+        public async void Task_Add_ValidData_MatchResult()
+        {
+            //Arrange  
+            var controller = new InventoryController(context);
+            Inventory objInventory = new Inventory();
+            byte[] image = new byte[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+            objInventory.item_Name = "OnePlus 8t";
+            objInventory.item_Desc = "Mobile Phone";
+            objInventory.itemAvailability = Convert.ToBoolean(1);
+            objInventory.item_AddedOn = DateTime.Now;
+            objInventory.item_Quantity = 5;
+            objInventory.item_Image = image;
+
+            //Act  
+            var data = await controller.PostInventoryItem(objInventory);
+
+            //Assert  
+            Assert.IsType<OkObjectResult>(data);
+
+            var okResult = data.Should().BeOfType<OkObjectResult>().Subject;
+           
+
+           Assert.Equal(1, okResult.Value);
+        }
+
+        #endregion
+
+        #region Update Existing Blog  
+
+        [Fact]
+        public async void Task_Update_ValidData_Return_OkResult()
         {
             //Arrange  
             var controller = new InventoryController(context);
             var postId = 2;
-            Inventory objInventory = new Inventory();
-
-            objInventory.item_Name = "OnePlus 8t";
-
 
             //Act  
-            //var data = await controller.PutInventoryItem(postId,objInventory);
-            IActionResult actionResult = await controller.PutInventoryItem(postId, objInventory);
+            var existingPost = await controller.getInventoryItem(postId);
+            var okResult = existingPost.Should().BeOfType<OkObjectResult>().Subject;
+            var result = okResult.Value.Should().BeAssignableTo<Inventory>().Subject;
+
+            Inventory objInventory = new Inventory();
+
+            
+            byte[] image = new byte[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+            objInventory.item_Name = "OnePlus 8t Updated";
+            objInventory.item_Desc = result.item_Desc;
+            objInventory.itemAvailability = result.itemAvailability;
+            objInventory.item_AddedOn = result.item_AddedOn;
+            objInventory.item_Quantity = result.item_Quantity;
+            objInventory.item_Image = result.item_Image;
+
+            var updatedData = await controller.PutInventoryItem(postId, objInventory);
 
             //Assert  
-            Microsoft.AspNetCore.Mvc.StatusCodeResult statusCode = Assert.IsType<Microsoft.AspNetCore.Mvc.StatusCodeResult>(actionResult);
-            Assert.Equal(200, statusCode.StatusCode);
-
+            Assert.IsType<Microsoft.AspNetCore.Mvc.OkResult>(updatedData);
         }
 
         [Fact]
-        public async void Task_DeletetById_Return()
+        public async void Task_Update_InvalidData_Return_BadRequest()
+        {
+            //Arrange  
+            var controller = new InventoryController(context);
+            var postId = 2;
+
+            //Act  
+            var existingPost = await controller.getInventoryItem(postId);
+            var okResult = existingPost.Should().BeOfType<OkObjectResult>().Subject;
+            var result = okResult.Value.Should().BeAssignableTo<Inventory>().Subject;
+
+            Inventory objInventory = new Inventory();
+
+            
+
+            byte[] image = new byte[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+            objInventory.item_Name = null;
+            objInventory.item_Desc = result.item_Desc;
+            objInventory.itemAvailability = result.itemAvailability;
+            objInventory.item_AddedOn = result.item_AddedOn;
+            objInventory.item_Quantity = result.item_Quantity;
+            objInventory.item_Image = result.item_Image;
+
+            controller.ModelState.AddModelError("item_Name", "Item Name is Required");
+            var updatedData = await controller.PutInventoryItem(postId, objInventory);
+
+
+            //Assert  
+            Assert.IsType<Microsoft.AspNetCore.Mvc.BadRequestResult>(updatedData);
+        }
+
+       
+
+        #endregion
+
+        #region Delete Post  
+
+        [Fact]
+        public async void Task_Delete_Post_Return_OkResult()
         {
             //Arrange  
             var controller = new InventoryController(context);
@@ -124,65 +319,28 @@ namespace ShopBridge.Test
             var data = await controller.DeleteInventoryItem(postId);
 
             //Assert  
-            var result = Assert.IsType<ActionResult<Inventory>>(data);
-            Assert.Null(result.Result);
-            Assert.Equal("Samsung A31", result.Value.item_Name);
-            //Assert.IsType<OkObjectResult>(data);
+            Assert.IsType<Microsoft.AspNetCore.Mvc.OkResult>(data);
         }
 
-        //[Fact]
-        //public async void Task_Post_Return()
-        //{
-        //    try
-        //    {
-        //        //Arrange  
+       
 
-        //        var controller = new InventoryController(context);
-        //        Inventory objInventory = new Inventory();
-        //        byte[] image = new byte[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        [Fact]
+        public async void Task_Delete_Return_BadRequestResult()
+        {
+            //Arrange  
+            var controller = new InventoryController(context);
+            int? postId = null;
 
-        //        objInventory.item_Name = "OnePlus 8t";
-        //        objInventory.item_Desc = "Mobile Phone";
-        //        objInventory.itemAvailability = Convert.ToBoolean(1);
-        //        objInventory.item_AddedOn = DateTime.Now;
-        //        objInventory.item_Quantity = 5;
-        //        objInventory.item_Image = image;
-        //        //var postId = 2;
+            //Act  
+            var data = await controller.DeleteInventoryItem(postId);
 
-        //        // Act
-        //        IHttpActionResult actionResult = (IHttpActionResult)controller.PostInventoryItem(new Inventory 
-        //        {   item_Name = "OnePlus 8t",
-        //            item_Desc = "Mobile Phone",
-        //            itemAvailability = Convert.ToBoolean(1),
-        //            item_AddedOn = DateTime.Now,
-        //            item_Quantity = 5,
-        //            item_Image = image
-        //        });
-        //        var badResult =  actionResult as HttpStatusCodeResult;
+            //Assert  
+            Assert.IsType<Microsoft.AspNetCore.Mvc.BadRequestResult>(data);
+        }
 
+        #endregion
 
-        //        // Assert
-        //        Assert.IsType((Type)actionResult, typeof(System.Web.Http.Results.OkResult));
-
-        //        //Act  
-        //        //var data = await controller.PostInventoryItem(objInventory);
-
-        //        //Assert  
-        //        //var result = Assert.IsType<ActionResult<Inventory>>(data);
-        //        //Assert.Null(result.Result.ToString());
-        //        //Assert.Equal(Microsoft.AspNetCore.Http.StatusCodes.Status200OK, result.);
-        //        actionResult.Should().BeOfType<OkObjectResult>().Which.StatusCode.Should().Be((int)HttpStatusCode.OK);
-        //        //Assert.IsType<OkObjectResult>(data);
-        //        //Assert.IsType(action)
-
-
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        string exception = ex.Message;
-        //    }
-
-        //}
+       
 
         private class PostRepository
         {
