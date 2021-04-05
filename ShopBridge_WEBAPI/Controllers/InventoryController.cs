@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -32,16 +32,20 @@ namespace ShopBridge_WEBAPI.Controllers
         
         [HttpGet]
         [Route("api/getInventoryItemList")]
-        public async Task<ActionResult<IEnumerable<Inventory>>> getInventoryItemList()
+        public async Task<IActionResult> getInventoryItemList()
         {
             string type_master = "";
             try
             {
                 var list =await (from tm in _context.Inventories
                                  select tm).ToListAsync();
-                return list;
 
-                //type_master = JsonConvert.SerializeObject(list);
+                if (list == null) {
+                    return NotFound();
+                }
+                return Ok(list);
+
+              
 
             }
             catch (Exception ex)
@@ -49,43 +53,47 @@ namespace ShopBridge_WEBAPI.Controllers
                 type_master = ex.Message;
                 return BadRequest();
             }
-            return Ok(type_master);
+           
         }
         
         
         [HttpGet]
         [Route("api/getInventoryItem")]
-        public async Task<ActionResult<Inventory>> getInventoryItem(int InventoryId)
+        public async Task<IActionResult> getInventoryItem(int? InventoryId)
         {
-           
+            if (InventoryId == null)
+            {
+                return BadRequest();
+            }
             Inventory inventory_item = null;
             if (InventoryId != 0)
             {
                 try
                 {
 
-                     inventory_item = await ((from inv in _context.Inventories
-                                           where inv.item_Id == InventoryId
-                                           select inv).SingleOrDefaultAsync()); // Getting product based on InventoryId from Database
+                    inventory_item = await ((from inv in _context.Inventories
+                                             where inv.item_Id == InventoryId
+                                             select inv).SingleOrDefaultAsync());
 
                     //inventory_item = await _context.Inventories.FindAsync(InventoryId);
 
-                    if ( inventory_item == null) {
+                    if (inventory_item == null)
+                    {
                         return NotFound();
                     }
 
                 }
                 catch (Exception ex)
                 {
-                    
+
                     string exception_msg = ex.Message;
                     return BadRequest();
                 }
             }
+            
 
-          
-            return Ok(inventory_item);
             //return inventory_item; For unit testing purpose
+            return Ok(inventory_item);
         }
 
 
@@ -94,63 +102,81 @@ namespace ShopBridge_WEBAPI.Controllers
         
         public async Task<IActionResult> PostInventoryItem(Inventory obj_Inventory)
         {
-            try
-            {
+            if (ModelState.IsValid) {
+                try
+                {
 
-                _context.Inventories.Add(obj_Inventory);
-                await _context.SaveChangesAsync(); // Inserting product to database
+                    _context.Inventories.Add(obj_Inventory);
+                   var inventory_id= await _context.SaveChangesAsync();
+                    if (inventory_id > 0)
+                    {
+                        return Ok(inventory_id);
+                    }
+                    else {
+                        return NotFound();
+                    }
 
+                }
+                catch (Exception ex)
+                {
+                    string Exception = ex.Message;
+                    return BadRequest();
+                }
             }
-            catch (Exception ex)
-            {
-                string Exception = ex.Message;
-                return BadRequest();
-            }
-
-            //return Content(HttpStatusCode.Created, obj_Inventory);
-            return StatusCode(200);
+           
+            return BadRequest();
         }
 
         [Route("api/PutInventoryItem")]
         public async Task<IActionResult> PutInventoryItem(int id,Inventory obj_Inventory)
         {
 
+            if (ModelState.IsValid) {
 
-            obj_Inventory.item_Id = id;
+                obj_Inventory.item_Id = id;
 
-            _context.Entry(obj_Inventory).State = EntityState.Modified; // Updating product in databsae based on id
+                _context.Entry(obj_Inventory).State = EntityState.Modified; //Comment this line while Unit Testing
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ItemExists(id))
+                try
                 {
-                    return NotFound();
+                    if (_context != null)
+                    {
+                        //Update that post
+                      //  _context.Inventories.Update(obj_Inventory)
+
+                        //Commit the transaction
+                       var result= await _context.SaveChangesAsync();
+                        return Ok();
+                    }
+
+                   
+                    
                 }
-                else
+                catch (Exception ex)
                 {
-                    throw;
+                    if (ex.GetType().FullName == "Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException")
+                    {
+                        return NotFound();
+                    }
+
+                    return BadRequest();
                 }
+
             }
             
-            
-            return StatusCode(200);
-        
-
-            //return NoContent();
+            return BadRequest();
         }
 
         [Route("api/DeleteInventoryItem")]
-        public async Task<ActionResult<Inventory>> DeleteInventoryItem(int itemId)
+        public async Task<IActionResult> DeleteInventoryItem(int? itemId)
         {
-
+            if (itemId==null) {
+                return BadRequest();
+            }
             try
             {
 
-                var inventory_item = await _context.Inventories.FindAsync(itemId); // Finding and Deleting product from database
+                var inventory_item = await _context.Inventories.FindAsync(itemId);
                 if (inventory_item == null)
                 {
                     return NotFound();
@@ -159,7 +185,7 @@ namespace ShopBridge_WEBAPI.Controllers
                 _context.Inventories.Remove(inventory_item);
                 await _context.SaveChangesAsync();
 
-                return inventory_item;
+                return Ok();
 
             }
             catch (Exception ex)
@@ -169,7 +195,7 @@ namespace ShopBridge_WEBAPI.Controllers
             }
 
 
-            return Ok();
+            
         }
 
         private bool ItemExists(int id)
